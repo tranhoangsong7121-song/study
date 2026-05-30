@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SONG HỌC WRI – Luyện Viết Tiếng Anh</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+  body { background: #f0f4ff; margin: 0; padding: 0; height: 100vh; overflow: hidden; }
+
+  /* AUTH */
+  #auth-screen { position:fixed;inset:0;background:linear-gradient(135deg,#1e6fff 0%,#0a3dcc 100%);display:flex;align-items:center;justify-content:center;z-index:1000; }
+  .auth-card { background:#fff;border-radius:20px;padding:40px 36px;width:360px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.25); }
+  .auth-logo { display:flex;align-items:center;gap:10px;margin-bottom:28px; }
+  .auth-logo .logo-icon { width:44px;height:44px;background:linear-gradient(135deg,#1e6fff,#0a3dcc);border-radius:12px;display:flex;align-items:center;justify-content:center; }
+  .auth-tab { display:flex;background:#f0f4ff;border-radius:10px;padding:4px;margin-bottom:24px; }
+  .auth-tab button { flex:1;padding:8px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;color:#6b7280;transition:.2s; }
+  .auth-tab button.active { background:#1e6fff;color:#fff; }
+  .auth-input { width:100%;padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;transition:.2s;margin-bottom:12px; }
+  .auth-input:focus { border-color:#1e6fff;box-shadow:0 0 0 3px rgba(30,111,255,.1); }
+  .btn-primary { width:100%;padding:12px;background:linear-gradient(135deg,#1e6fff,#0a3dcc);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:.2s; }
+  .btn-primary:hover { opacity:.9;transform:translateY(-1px); }
+  .btn-guest { width:100%;padding:11px;background:#f0f4ff;color:#1e6fff;border:1.5px solid #1e6fff;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;transition:.2s; }
+  .btn-guest:hover { background:#e0ecff; }
+  .auth-divider { display:flex;align-items:center;gap:10px;margin:14px 0;color:#9ca3af;font-size:13px; }
+  .auth-divider::before,.auth-divider::after { content:'';flex:1;height:1px;background:#e5e7eb; }
+
+  /* MAIN LAYOUT */
+  #app { display:none;height:100vh;flex-direction:column;overflow:hidden; }
+  .app-header { background:#fff;border-bottom:1px solid #e5e7eb;padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.06); }
+  .app-logo { display:flex;align-items:center;gap:10px; }
+  .app-logo .logo-sm { width:34px;height:34px;background:linear-gradient(135deg,#1e6fff,#0a3dcc);border-radius:9px;display:flex;align-items:center;justify-content:center; }
+  .header-right { display:flex;align-items:center;gap:12px; }
+  .user-badge { display:flex;align-items:center;gap:8px;background:#f0f4ff;padding:5px 12px 5px 6px;border-radius:20px;cursor:pointer; }
+  .user-avatar { width:28px;height:28px;background:linear-gradient(135deg,#1e6fff,#06b6d4);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700; }
+
+  /* NAV TABS */
+  .nav-tabs { display:flex;background:#fff;border-bottom:1px solid #e5e7eb;flex-shrink:0;overflow-x:auto;scrollbar-width:none; }
+  .nav-tabs::-webkit-scrollbar { display:none; }
+  .nav-tab { display:flex;align-items:center;gap:7px;padding:12px 20px;border:none;background:transparent;cursor:pointer;font-size:14px;font-weight:600;color:#6b7280;border-bottom:2.5px solid transparent;white-space:nowrap;transition:.2s; }
+  .nav-tab.active { color:#1e6fff;border-bottom-color:#1e6fff;background:#f5f8ff; }
+  .nav-tab:hover:not(.active) { color:#374151;background:#f9fafb; }
+
+  /* CONTENT */
+  .content-area { flex:1;overflow:hidden;position:relative; }
+  .tab-panel { display:none;height:100%;overflow-y:auto;padding:20px; }
+  .tab-panel.active { display:block; }
+  .tab-panel::-webkit-scrollbar { width:5px; }
+  .tab-panel::-webkit-scrollbar-thumb { background:#cbd5e1;border-radius:3px; }
+
+  /* CARDS */
+  .card { background:#fff;border-radius:14px;box-shadow:0 1px 6px rgba(0,0,0,.06);border:1px solid #f1f5f9; }
+  .card-hover:hover { box-shadow:0 4px 16px rgba(30,111,255,.12);border-color:#bfdbfe;transform:translateY(-1px);transition:.2s; }
+
+  /* LIBRARY */
+  .library-grid { display:grid;grid-template-columns:280px 1fr;gap:16px;height:100%;max-height:calc(100vh - 130px); }
+  .lesson-list { overflow-y:auto;display:flex;flex-direction:column;gap:8px; }
+  .lesson-list::-webkit-scrollbar { width:4px; }
+  .lesson-list::-webkit-scrollbar-thumb { background:#cbd5e1;border-radius:2px; }
+  .lesson-item { padding:12px 14px;border-radius:11px;border:1.5px solid #e5e7eb;background:#fff;cursor:pointer;transition:.2s; }
+  .lesson-item:hover { border-color:#93c5fd;background:#f0f7ff; }
+  .lesson-item.selected { border-color:#1e6fff;background:#eff6ff; }
+  .lesson-title { font-weight:600;font-size:14px;color:#1e293b;margin-bottom:4px; }
+  .lesson-meta { font-size:12px;color:#94a3b8; }
+
+  /* PRACTICE */
+  .practice-layout { display:grid;grid-template-columns:1fr 1fr;gap:16px;height:calc(100vh - 200px); }
+  .practice-pane { display:flex;flex-direction:column;height:100%; }
+  .pane-label { font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px; }
+  .text-display { flex:1;background:#f8fafc;border:1.5px solid #e5e7eb;border-radius:12px;padding:16px;overflow-y:auto;font-size:15px;line-height:1.8;color:#1e293b; }
+  .text-display::-webkit-scrollbar { width:4px; }
+  .text-display::-webkit-scrollbar-thumb { background:#cbd5e1;border-radius:2px; }
+  .text-input-area { flex:1;background:#fff;border:1.5px solid #e5e7eb;border-radius:12px;padding:16px;font-size:15px;line-height:1.8;color:#1e293b;resize:none;outline:none;font-family:'Inter',sans-serif; }
+  .text-input-area:focus { border-color:#1e6fff;box-shadow:0 0 0 3px rgba(30,111,255,.08); }
+  .wrong-word { color:#ef4444;text-decoration:underline wavy #ef4444; }
+  .correct-word { color:#22c55e; }
+
+  /* STATS */
+  .stats-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px; }
+  .stat-card { padding:18px 20px;border-radius:14px;background:#fff;border:1px solid #f1f5f9;box-shadow:0 1px 4px rgba(0,0,0,.05); }
+  .stat-val { font-size:28px;font-weight:800;color:#1e6fff;margin-bottom:4px; }
+  .stat-lbl { font-size:13px;color:#64748b;font-weight:500; }
+
+  /* MODAL */
+  .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(3px);z-index:500;display:none;align-items:center;justify-content:center; }
+  .modal-overlay.show { display:flex; }
+  .modal-box { background:#fff;border-radius:18px;padding:28px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2); }
+  .modal-title { font-size:18px;font-weight:700;color:#1e293b;margin-bottom:20px;display:flex;align-items:center;gap:10px; }
+  .form-label { font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;display:block; }
+  .form-input { width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;font-family:'Inter',sans-serif;transition:.2s; }
+  .form-input:focus { border-color:#1e6fff;box-shadow:0 0 0 3px rgba(30,111,255,.08); }
+  .form-textarea { width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;font-family:'Inter',sans-serif;transition:.2s;resize:vertical;min-height:140px; }
+  .form-textarea:focus { border-color:#1e6fff;box-shadow:0 0 0 3px rgba(30,111,255,.08); }
+
+  /* BUTTONS */
+  .btn { padding:9px 18px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:.18s;display:inline-flex;align-items:center;gap:6px; }
+  .btn-blue { background:#1e6fff;color:#fff; }
+  .btn-blue:hover { background:#1557e0;transform:translateY(-1px); }
+  .btn-outline { background:#fff;color:#1e6fff;border:1.5px solid #1e6fff; }
+  .btn-outline:hover { background:#f0f7ff; }
+  .btn-red { background:#fef2f2;color:#ef4444;border:1.5px solid #fecaca; }
+  .btn-red:hover { background:#fee2e2; }
+  .btn-green { background:#1e6fff;color:#fff; }
+  .btn-sm { padding:6px 12px;font-size:13px;border-radius:8px; }
+
+  /* RESULT */
+  .result-bar { height:10px;border-radius:6px;background:#e5e7eb;overflow:hidden;margin:6px 0; }
+  .result-bar-fill { height:100%;border-radius:6px;transition:width 1s; }
+
+  /* TOGGLE */
+  .toggle-group { display:flex;background:#f0f4ff;border-radius:10px;padding:3px;gap:2px; }
+  .toggle-btn { flex:1;padding:7px 12px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:#6b7280;transition:.2s; }
+  .toggle-btn.active { background:#1e6fff;color:#fff;box-shadow:0 2px 6px rgba(30,111,255,.3); }
+
+  /* DIFF HIGHLIGHT */
+  .diff-correct { background:#dcfce7;color:#15803d;border-radius:3px;padding:0 2px; }
+  .diff-wrong { background:#fee2e2;color:#dc2626;border-radius:3px;padding:0 2px;text-decoration:line-through; }
+  .diff-missing { background:#fef3c7;color:#d97706;border-radius:3px;padding:0 2px;font-style:italic; }
+
+  /* RESPONSIVE */
+  @media(max-width:768px){
+    .library-grid { grid-template-columns:1fr; }
+    .practice-layout { grid-template-columns:1fr;grid-template-rows:1fr 1fr; }
+    .stats-grid { grid-template-columns:1fr 1fr; }
+    .nav-tab { padding:10px 14px;font-size:13px; }
+    .tab-panel { padding:12px; }
+  }
+  @media(max-width:480px){
+    .stats-grid { grid-template-columns:1fr; }
+    .auth-card { padding:28px 20px; }
+  }
+
+  /* SCROLLBAR GLOBAL */
+  ::-webkit-scrollbar { width:5px;height:5px; }
+  ::-webkit-scrollbar-track { background:#f1f5f9; }
+  ::-webkit-scrollbar-thumb { background:#cbd5e1;border-radius:3px; }
+
+  /* LIVE ERROR OVERLAY */
+  #live-display { position:relative; }
+  .live-char { display:inline; }
+  .live-char.ok { color:#22c55e; }
+  .live-char.err { color:#ef4444;background:#fee2e2;border-radius:2px; }
+  .live-char.pending { color:#94a3b8; }
+
+  .badge { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600; }
+  .badge-blue { background:#eff6ff;color:#1e6fff; }
+  .badge-green { background:#f0fdf4;color:#16a34a; }
+  .badge-orange { background:#fff7ed;color:#ea580c; }
+
+  .empty-state { display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:#94a3b8; }
+  .empty-state svg { opacity:.4; }
+
+  /* NOTIFICATION TOAST */
+  #toast { position:fixed;bottom:24px;right:24px;background:#1e293b;color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:500;z-index:9999;transform:translateY(80px);opacity:0;transition:.3s;box-shadow:0 8px 24px rgba(0,0,0,.2); }
+  #toast.show { transform:translateY(0);opacity:1; }
+
+  .progress-ring-circle { transition: stroke-dashoffset 1s ease; }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <div style="font-weight:800;font-size:17px;color:#1e293b;line-height:1">SONG HỌC WRI</div>
+        <div style="font-size:11px;color:#94a3b8;font-weight:500">Luyện viết tiếng Anh thông minh</div>
+      </div>
+    </div>
+    <div class="auth-tab">
+      <button class="active" id="tab-login" onclick="switchAuthTab('login')">Đăng nhập</button>
+      <button id="tab-register" onclick="switchAuthTab('register')">Đăng ký</button>
+    </div>
+    <!-- LOGIN FORM -->
+    <div id="form-login">
+      <input class="auth-input" type="text" id="login-user" placeholder="Tên đăng nhập hoặc email" />
+      <input class="auth-input" type="password" id="login-pass" placeholder="Mật khẩu" />
+      <button class="btn-primary" onclick="doLogin()">🔐 Đăng nhập</button>
+      <div class="auth-divider">hoặc</div>
+      <button class="btn-guest" onclick="doGuest()">👤 Dùng thử không cần tài khoản</button>
+    </div>
+    <!-- REGISTER FORM -->
+    <div id="form-register" style="display:none">
+      <input class="auth-input" type="text" id="reg-name" placeholder="Họ và tên" />
+      <input class="auth-input" type="text" id="reg-user" placeholder="Tên đăng nhập" />
+      <input class="auth-input" type="password" id="reg-pass" placeholder="Mật khẩu" />
+      <input class="auth-input" type="password" id="reg-pass2" placeholder="Nhắc lại mật khẩu" />
+      <button class="btn-primary" onclick="doRegister()">✨ Tạo tài khoản</button>
+      <div class="auth-divider">hoặc</div>
+      <button class="btn-guest" onclick="doGuest()">👤 Dùng thử không cần tài khoản</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none;flex-direction:column;height:100vh;">
+
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="app-logo">
+      <div class="logo-sm">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span style="font-weight:800;font-size:16px;color:#1e293b;">SONG HỌC WRI</span>
+    </div>
+    <div class="header-right">
+      <div style="font-size:13px;color:#94a3b8;" id="session-time">⏱ 00:00</div>
+      <div class="user-badge" onclick="doLogout()">
+        <div class="user-avatar" id="user-avatar-initials">U</div>
+        <span style="font-size:13px;font-weight:600;color:#374151;" id="display-username">Người dùng</span>
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path stroke="#94a3b8" stroke-width="2" stroke-linecap="round" d="M17 8l-5 5-5-5"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('dashboard')">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke="#current" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-tab" onclick="switchTab('library')">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+      Thư viện bài học
+    </button>
+    <button class="nav-tab" onclick="switchTab('practice')">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Luyện viết
+    </button>
+    <button class="nav-tab" onclick="switchTab('stats')">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      Thống kê
+    </button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content-area">
+
+    <!-- DASHBOARD TAB -->
+    <div class="tab-panel active" id="panel-dashboard">
+      <div style="max-width:900px;margin:0 auto;">
+        <div style="margin-bottom:16px;">
+          <div style="font-size:22px;font-weight:800;color:#1e293b;">Xin chào, <span id="greet-name">bạn</span>! 👋</div>
+          <div style="font-size:14px;color:#64748b;margin-top:2px;">Hôm nay là ngày tốt để luyện viết tiếng Anh.</div>
+        </div>
+        <div class="stats-grid" id="dash-stats">
+          <div class="stat-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div style="font-size:13px;font-weight:600;color:#64748b;">Tổng bài học</div>
+              <div style="width:36px;height:36px;background:#eff6ff;border-radius:10px;display:flex;align-items:center;justify-content:center;">📚</div>
+            </div>
+            <div class="stat-val" id="stat-lessons">0</div>
+            <div class="stat-lbl">bài viết đã lưu</div>
+          </div>
+          <div class="stat-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div style="font-size:13px;font-weight:600;color:#64748b;">Tổng lần luyện tập</div>
+              <div style="width:36px;height:36px;background:#f0fdf4;border-radius:10px;display:flex;align-items:center;justify-content:center;">✍️</div>
+            </div>
+            <div class="stat-val" id="stat-sessions">0</div>
+            <div class="stat-lbl">lần luyện tập</div>
+          </div>
+          <div class="stat-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div style="font-size:13px;font-weight:600;color:#64748b;">Tổng thời gian học</div>
+              <div style="width:36px;height:36px;background:#fff7ed;border-radius:10px;display:flex;align-items:center;justify-content:center;">⏰</div>
+            </div>
+            <div class="stat-val" id="stat-time">0m</div>
+            <div class="stat-lbl">phút học tập</div>
+          </div>
+          <div class="stat-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div style="font-size:13px;font-weight:600;color:#64748b;">Độ chính xác TB</div>
+              <div style="width:36px;height:36px;background:#fdf4ff;border-radius:10px;display:flex;align-items:center;justify-content:center;">🎯</div>
+            </div>
+            <div class="stat-val" id="stat-accuracy">0%</div>
+            <div class="stat-lbl">trung bình</div>
+          </div>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+          <div class="card" style="padding:18px;cursor:pointer;background:linear-gradient(135deg,#1e6fff,#0a3dcc);color:#fff;" onclick="switchTab('library')">
+            <div style="font-size:24px;margin-bottom:8px;">📖</div>
+            <div style="font-weight:700;font-size:15px;">Thư viện bài học</div>
+            <div style="font-size:12px;opacity:.8;margin-top:4px;">Thêm & quản lý bài viết</div>
+          </div>
+          <div class="card" style="padding:18px;cursor:pointer;background:linear-gradient(135deg,#06b6d4,#0284c7);color:#fff;" onclick="switchTab('practice')">
+            <div style="font-size:24px;margin-bottom:8px;">✍️</div>
+            <div style="font-weight:700;font-size:15px;">Luyện viết ngay</div>
+            <div style="font-size:12px;opacity:.8;margin-top:4px;">Bắt đầu bài luyện tập</div>
+          </div>
+        </div>
+
+        <!-- RECENT LESSONS -->
+        <div class="card" style="padding:18px;">
+          <div style="font-weight:700;font-size:15px;color:#1e293b;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            🕐 Bài học gần đây
+          </div>
+          <div id="recent-lessons">
+            <div style="text-align:center;padding:20px;color:#94a3b8;font-size:14px;">Chưa có bài học nào. <span style="color:#1e6fff;cursor:pointer;" onclick="switchTab('library')">Thêm bài học ngay →</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIBRARY TAB -->
+    <div class="tab-panel" id="panel-library">
+      <div style="max-width:1100px;margin:0 auto;height:calc(100vh - 130px);">
+        <!-- TOP BAR -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+          <div style="font-size:18px;font-weight:800;color:#1e293b;">📚 Thư viện bài học</div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <div style="position:relative;">
+              <input type="text" id="search-input" placeholder="🔍 Tìm kiếm bài học..." oninput="filterLessons()" style="padding:9px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;width:220px;transition:.2s;" onfocus="this.style.borderColor='#1e6fff'" onblur="this.style.borderColor='#e5e7eb'"/>
+            </div>
+            <button class="btn btn-blue" onclick="openAddModal()">✚ Thêm bài mới</button>
+          </div>
+        </div>
+        <div class="library-grid" style="height:calc(100% - 54px);">
+          <!-- LESSON LIST -->
+          <div>
+            <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Danh sách bài học (<span id="lesson-count">0</span>)</div>
+            <div class="lesson-list" id="lesson-list" style="height:calc(100% - 28px);">
+              <div class="empty-state">
+                <svg width="48" height="48" fill="none" viewBox="0 0 24 24"><path stroke="#cbd5e1" stroke-width="1.5" d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path stroke="#cbd5e1" stroke-width="1.5" d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                <div style="font-size:14px;">Chưa có bài học nào</div>
+                <button class="btn btn-blue btn-sm" onclick="openAddModal()">Thêm bài đầu tiên</button>
+              </div>
+            </div>
+          </div>
+          <!-- LESSON DETAIL -->
+          <div class="card" style="padding:20px;display:flex;flex-direction:column;overflow:hidden;">
+            <div id="lesson-detail-empty" class="empty-state">
+              <svg width="56" height="56" fill="none" viewBox="0 0 24 24"><path stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <div style="font-size:14px;">Chọn bài học để xem chi tiết</div>
+            </div>
+            <div id="lesson-detail" style="display:none;flex-direction:column;height:100%;">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+                <div style="flex:1;">
+                  <div style="font-size:18px;font-weight:800;color:#1e293b;margin-bottom:4px;" id="detail-title">—</div>
+                  <div style="font-size:12px;color:#94a3b8;" id="detail-meta">—</div>
+                </div>
+                <div style="display:flex;gap:8px;margin-left:12px;">
+                  <button class="btn btn-outline btn-sm" onclick="editLesson()">✏️ Sửa</button>
+                  <button class="btn btn-red btn-sm" onclick="deleteLesson()">🗑 Xóa</button>
+                </div>
+              </div>
+              <div style="flex:1;overflow-y:auto;background:#f8fafc;border-radius:10px;padding:14px;font-size:14px;line-height:1.9;color:#374151;margin-bottom:14px;" id="detail-content">—</div>
+              <button class="btn btn-blue" style="width:100%;" onclick="startPracticeFromLibrary()">✍️ Luyện tập bài này →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRACTICE TAB -->
+    <div class="tab-panel" id="panel-practice">
+      <div style="max-width:1100px;margin:0 auto;">
+        <!-- SETUP BAR -->
+        <div class="card" style="padding:14px 18px;margin-bottom:14px;" id="practice-setup">
+          <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
+            <div>
+              <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Bài học</div>
+              <select id="practice-lesson-select" style="padding:7px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;outline:none;min-width:180px;cursor:pointer;" onchange="onLessonSelectChange()">
+                <option value="">— Chọn bài học —</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Mức độ</div>
+              <div class="toggle-group" style="min-width:220px;">
+                <button class="toggle-btn active" onclick="setLevel('sentence',this)">Từng câu</button>
+                <button class="toggle-btn" onclick="setLevel('paragraph',this)">Từng đoạn</button>
+                <button class="toggle-btn" onclick="setLevel('full',this)">Toàn bài</button>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Chế độ học</div>
+              <div class="toggle-group" style="min-width:180px;">
+                <button class="toggle-btn active" onclick="setMode('copy',this)">👁 Vừa xem</button>
+                <button class="toggle-btn" onclick="setMode('memory',this)">🧠 Trí nhớ</button>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Sửa lỗi</div>
+              <div class="toggle-group" style="min-width:180px;">
+                <button class="toggle-btn active" onclick="setErrorMode('live',this)">⚡ Trực tiếp</button>
+                <button class="toggle-btn" onclick="setErrorMode('submit',this)">📝 Khi nộp</button>
+              </div>
+            </div>
+            <div style="margin-left:auto;">
+              <button class="btn btn-blue" style="margin-top:18px;" onclick="startPractice()">▶ Bắt đầu</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PRACTICE AREA -->
+        <div id="practice-area" style="display:none;">
+          <!-- INFO BAR -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <span class="badge badge-blue" id="practice-mode-badge">👁 Vừa xem</span>
+              <span class="badge badge-orange" id="practice-level-badge">Từng câu</span>
+              <span id="segment-indicator" style="font-size:13px;color:#64748b;font-weight:600;"></span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <div style="font-size:13px;color:#64748b;font-weight:600;" id="practice-timer">⏱ 00:00</div>
+              <button class="btn btn-outline btn-sm" onclick="resetPractice()">↩ Đặt lại</button>
+            </div>
+          </div>
+
+          <!-- WRITING AREA -->
+          <div id="writing-area" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;height:calc(100vh - 290px);">
+            <!-- LEFT: ORIGINAL -->
+            <div id="left-pane" class="practice-pane" style="display:none;">
+              <div class="pane-label">📄 Bài gốc</div>
+              <div class="text-display" id="original-display"></div>
+            </div>
+            <!-- RIGHT: INPUT -->
+            <div class="practice-pane" id="right-pane">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div class="pane-label" id="input-label" style="margin-bottom:0;">✍️ Nhập lại từ trí nhớ</div>
+                <div id="live-word-count" style="font-size:12px;color:#94a3b8;font-weight:500;"></div>
+              </div>
+              <div style="position:relative;flex:1;display:flex;flex-direction:column;">
+                <textarea class="text-input-area" id="user-input" placeholder="Bắt đầu gõ ở đây... (Ctrl+Enter để nộp bài)" oninput="onUserInput()"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- SEGMENT NAVIGATION -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;flex-wrap:wrap;gap:10px;">
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-outline btn-sm" onclick="prevSegment()" id="btn-prev">← Trước</button>
+              <button class="btn btn-outline btn-sm" onclick="nextSegment()" id="btn-next">Tiếp →</button>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-outline btn-sm" onclick="showHint()" id="btn-hint">💡 Gợi ý</button>
+              <button class="btn btn-blue" onclick="submitAnswer()">✔ Nộp bài</button>
+            </div>
+          </div>
+
+          <!-- RESULT PANEL -->
+          <div id="result-panel" style="display:none;margin-top:14px;" class="card">
+            <div style="padding:18px;">
+              <div style="font-weight:800;font-size:16px;color:#1e293b;margin-bottom:14px;">📊 Kết quả luyện tập</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:14px;">
+                <div style="text-align:center;padding:14px;background:#f0fdf4;border-radius:12px;">
+                  <div style="font-size:28px;font-weight:800;color:#16a34a;" id="res-accuracy">0%</div>
+                  <div style="font-size:12px;color:#64748b;margin-top:2px;">Chính xác</div>
+                </div>
+                <div style="text-align:center;padding:14px;background:#eff6ff;border-radius:12px;">
+                  <div style="font-size:28px;font-weight:800;color:#1e6fff;" id="res-correct">0</div>
+                  <div style="font-size:12px;color:#64748b;margin-top:2px;">Từ đúng</div>
+                </div>
+                <div style="text-align:center;padding:14px;background:#fef2f2;border-radius:12px;">
+                  <div style="font-size:28px;font-weight:800;color:#ef4444;" id="res-wrong">0</div>
+                  <div style="font-size:12px;color:#64748b;margin-top:2px;">Từ sai</div>
+                </div>
+                <div style="text-align:center;padding:14px;background:#fff7ed;border-radius:12px;">
+                  <div style="font-size:28px;font-weight:800;color:#ea580c;" id="res-time">0s</div>
+                  <div style="font-size:12px;color:#64748b;margin-top:2px;">Thời gian</div>
+                </div>
+              </div>
+              <div class="result-bar"><div class="result-bar-fill" id="res-bar" style="background:linear-gradient(90deg,#1e6fff,#06b6d4);width:0%"></div></div>
+              <div style="margin-top:14px;">
+                <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:8px;">Chi tiết so sánh:</div>
+                <div id="diff-result" style="font-size:14px;line-height:2;padding:12px;background:#f8fafc;border-radius:10px;max-height:150px;overflow-y:auto;"></div>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+                <button class="btn btn-blue" onclick="retrySegment()">🔄 Thử lại</button>
+                <button class="btn btn-outline" onclick="nextSegment()">Tiếp theo →</button>
+                <button class="btn btn-outline" onclick="resetPractice()">↩ Chọn bài khác</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IDLE STATE -->
+        <div id="practice-idle" class="card" style="padding:40px;text-align:center;">
+          <div style="font-size:48px;margin-bottom:12px;">✍️</div>
+          <div style="font-size:18px;font-weight:700;color:#1e293b;margin-bottom:8px;">Sẵn sàng luyện viết?</div>
+          <div style="font-size:14px;color:#64748b;margin-bottom:20px;">Chọn bài học và cấu hình bên trên rồi nhấn Bắt đầu!</div>
+          <button class="btn btn-blue" onclick="switchTab('library');openAddModal()">📚 Thêm bài học mới</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS TAB -->
+    <div class="tab-panel" id="panel-stats">
+      <div style="max-width:900px;margin:0 auto;">
+        <div style="font-size:18px;font-weight:800;color:#1e293b;margin-bottom:14px;">📊 Thống kê học tập</div>
+        <div class="stats-grid" style="margin-bottom:16px;">
+          <div class="stat-card">
+            <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">Số lần đăng nhập</div>
+            <div class="stat-val" id="s-logins">0</div>
+            <div class="stat-lbl">lần</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">Tổng thời gian học</div>
+            <div class="stat-val" id="s-total-time">0</div>
+            <div class="stat-lbl">phút</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">Độ chính xác tốt nhất</div>
+            <div class="stat-val" id="s-best-acc">0%</div>
+            <div class="stat-lbl">cao nhất</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">Tổng phiên luyện tập</div>
+            <div class="stat-val" id="s-sessions">0</div>
+            <div class="stat-lbl">phiên</div>
+          </div>
+        </div>
+
+        <!-- CHART -->
+        <div class="card" style="padding:20px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="font-weight:700;font-size:15px;color:#1e293b;">📅 Thời gian học theo ngày (7 ngày gần nhất)</div>
+          </div>
+          <div style="height:220px;position:relative;">
+            <canvas id="daily-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- ACCURACY CHART -->
+        <div class="card" style="padding:20px;">
+          <div style="font-weight:700;font-size:15px;color:#1e293b;margin-bottom:14px;">🎯 Độ chính xác các phiên gần nhất</div>
+          <div style="height:200px;position:relative;">
+            <canvas id="accuracy-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content-area -->
+</div><!-- /app -->
+
+<!-- MODAL: ADD/EDIT LESSON -->
+<div class="modal-overlay" id="modal-lesson">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span id="modal-lesson-icon">✚</span>
+      <span id="modal-lesson-title">Thêm bài học mới</span>
+      <button onclick="closeModal('modal-lesson')" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:20px;color:#94a3b8;line-height:1;">×</button>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label class="form-label">Tiêu đề bài học *</label>
+      <input class="form-input" type="text" id="modal-lesson-name" placeholder="Ví dụ: Unit 1 – Introduction" />
+    </div>
+    <div style="margin-bottom:14px;">
+      <label class="form-label">Nội dung bài viết (tiếng Anh) *</label>
+      <textarea class="form-textarea" id="modal-lesson-content" placeholder="Dán nội dung bài viết tiếng Anh vào đây...&#10;&#10;Ví dụ: The sun rises in the east and sets in the west. Every morning, people around the world wake up to see its golden light."></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-outline" onclick="closeModal('modal-lesson')">Hủy</button>
+      <button class="btn btn-blue" onclick="saveLesson()">💾 Lưu bài học</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRM DELETE -->
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal-box" style="width:380px;">
+    <div class="modal-title">🗑 Xác nhận xóa</div>
+    <div style="color:#64748b;font-size:14px;margin-bottom:20px;">Bạn có chắc muốn xóa bài học "<span id="delete-lesson-name" style="color:#1e293b;font-weight:600;"></span>" không? Hành động này không thể hoàn tác.</div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-outline" onclick="closeModal('modal-delete')">Hủy</button>
+      <button class="btn" style="background:#ef4444;color:#fff;" onclick="confirmDelete()">🗑 Xóa</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========================
+// STATE & STORAGE
+// ========================
+let state = {
+  user: null,
+  lessons: [],
+  selectedLessonId: null,
+  practiceLesson: null,
+  practiceLevel: 'sentence',
+  practiceMode: 'copy',
+  practiceErrorMode: 'live',
+  segments: [],
+  currentSegment: 0,
+  practiceStartTime: null,
+  sessionSeconds: 0,
+  sessionTimer: null,
+  practiceTimer: null,
+  practiceSeconds: 0,
+  editingLessonId: null,
+  stats: {
+    logins: 0,
+    totalMinutes: 0,
+    sessions: [],
+    dailyMinutes: {},
+  }
+};
+let dailyChartInstance = null;
+let accuracyChartInstance = null;
+
+function save() {
+  if (!state.user) return;
+  const key = 'swri_' + state.user;
+  localStorage.setItem(key, JSON.stringify({
+    lessons: state.lessons,
+    stats: state.stats
+  }));
+}
+
+function load() {
+  if (!state.user) return;
+  const key = 'swri_' + state.user;
+  const raw = localStorage.getItem(key);
+  if (raw) {
+    const d = JSON.parse(raw);
+    state.lessons = d.lessons || [];
+    state.stats = Object.assign({ logins:0, totalMinutes:0, sessions:[], dailyMinutes:{} }, d.stats || {});
+  } else {
+    state.lessons = [];
+    state.stats = { logins:0, totalMinutes:0, sessions:[], dailyMinutes:{} };
+    // Add sample lessons for first time
+    state.lessons = [
+      {
+        id: uid(), title: 'Sample – Morning Routine',
+        content: 'Every morning, I wake up at six o\'clock. I brush my teeth and wash my face. Then I make a cup of coffee and read the news. After breakfast, I go for a short walk in the park. This routine helps me feel energized and ready for the day ahead.',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: uid(), title: 'Sample – The Power of Reading',
+        content: 'Reading is one of the most powerful habits a person can develop. It expands your vocabulary, improves your writing skills, and broadens your knowledge of the world. Whether you read fiction or non-fiction, each book opens a new window to a different perspective. Make reading a daily habit and watch your life transform.',
+        createdAt: new Date().toISOString()
+      }
+    ];
+    save();
+  }
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+// ========================
+// AUTH
+// ========================
+function switchAuthTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
+}
+
+function getUsers() {
+  return JSON.parse(localStorage.getItem('swri_users') || '{}');
+}
+function saveUsers(u) { localStorage.setItem('swri_users', JSON.stringify(u)); }
+
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  if (!u || !p) return toast('Vui lòng nhập đầy đủ thông tin!', 'err');
+  const users = getUsers();
+  if (!users[u] || users[u].pass !== btoa(p)) return toast('Sai tên đăng nhập hoặc mật khẩu!', 'err');
+  enterApp(u, users[u].name);
+}
+
+function doRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const u = document.getElementById('reg-user').value.trim();
+  const p = document.getElementById('reg-pass').value;
+  const p2 = document.getElementById('reg-pass2').value;
+  if (!name || !u || !p) return toast('Vui lòng nhập đầy đủ thông tin!', 'err');
+  if (p !== p2) return toast('Mật khẩu không khớp!', 'err');
+  if (p.length < 4) return toast('Mật khẩu tối thiểu 4 ký tự!', 'err');
+  const users = getUsers();
+  if (users[u]) return toast('Tên đăng nhập đã tồn tại!', 'err');
+  users[u] = { name, pass: btoa(p) };
+  saveUsers(users);
+  toast('Đăng ký thành công! Đang đăng nhập...', 'ok');
+  setTimeout(() => enterApp(u, name), 800);
+}
+
+function doGuest() {
+  enterApp('guest_' + Date.now(), 'Khách');
+}
+
+function enterApp(username, displayName) {
+  state.user = username;
+  load();
+  state.stats.logins = (state.stats.logins || 0) + 1;
+  // Record today login
+  const today = new Date().toISOString().slice(0,10);
+  if (!state.stats.dailyMinutes) state.stats.dailyMinutes = {};
+  if (!state.stats.dailyMinutes[today]) state.stats.dailyMinutes[today] = 0;
+  save();
+
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('display-username').textContent = displayName || username;
+  document.getElementById('greet-name').textContent = displayName || username;
+  document.getElementById('user-avatar-initials').textContent = (displayName || username)[0].toUpperCase();
+
+  startSessionTimer();
+  renderLibrary();
+  renderDashboard();
+  renderStats();
+}
+
+function doLogout() {
+  if (!confirm('Bạn có muốn đăng xuất không?')) return;
+  stopSessionTimer();
+  const today = new Date().toISOString().slice(0,10);
+  const addMins = Math.floor((state.sessionSeconds || 0) / 60);
+  if (addMins > 0 && state.user) {
+    if (!state.stats.dailyMinutes) state.stats.dailyMinutes = {};
+    if (!state.stats.dailyMinutes[today]) state.stats.dailyMinutes[today] = 0;
+    state.stats.dailyMinutes[today] += addMins;
+    state.stats.totalMinutes = (state.stats.totalMinutes || 0) + addMins;
+    save();
+  }
+  sessionStorage.removeItem('swri_current');
+  state.user = null;
+  location.reload();
+}
+
+// ========================
+// SESSION TIMER
+// ========================
+function startSessionTimer() {
+  state.sessionSeconds = 0;
+  state.sessionTimer = setInterval(() => {
+    state.sessionSeconds++;
+    const m = String(Math.floor(state.sessionSeconds/60)).padStart(2,'0');
+    const s = String(state.sessionSeconds%60).padStart(2,'0');
+    document.getElementById('session-time').textContent = `⏱ ${m}:${s}`;
+    // Every minute, save stats
+    if (state.sessionSeconds % 60 === 0) {
+      const today = new Date().toISOString().slice(0,10);
+      if (!state.stats.dailyMinutes[today]) state.stats.dailyMinutes[today] = 0;
+      state.stats.dailyMinutes[today]++;
+      state.stats.totalMinutes = (state.stats.totalMinutes || 0) + 1;
+      save();
+    }
+  }, 1000);
+}
+
+function stopSessionTimer() {
+  if (state.sessionTimer) clearInterval(state.sessionTimer);
+}
+
+// ========================
+// TABS
+// ========================
+function switchTab(name) {
+  document.querySelectorAll('.nav-tab').forEach((t,i) => {
+    const tabs = ['dashboard','library','practice','stats'];
+    t.classList.toggle('active', tabs[i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'stats') { renderStats(); setTimeout(() => renderCharts(), 100); }
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'library') renderLibrary();
+  if (name === 'practice') renderPracticeSelect();
+}
+
+// ========================
+// DASHBOARD
+// ========================
+function renderDashboard() {
+  document.getElementById('stat-lessons').textContent = state.lessons.length;
+  document.getElementById('stat-sessions').textContent = state.stats.sessions ? state.stats.sessions.length : 0;
+  const mins = state.stats.totalMinutes || 0;
+  document.getElementById('stat-time').textContent = mins >= 60 ? Math.round(mins/60) + 'h' : mins + 'm';
+  const sessions = state.stats.sessions || [];
+  const avg = sessions.length ? Math.round(sessions.reduce((a,s) => a + (s.accuracy||0), 0) / sessions.length) : 0;
+  document.getElementById('stat-accuracy').textContent = avg + '%';
+
+  // Recent lessons
+  const recent = [...state.lessons].slice(-4).reverse();
+  const el = document.getElementById('recent-lessons');
+  if (recent.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:20px;color:#94a3b8;font-size:14px;">Chưa có bài học nào. <span style="color:#1e6fff;cursor:pointer;" onclick="switchTab('library')">Thêm bài học ngay →</span></div>`;
+  } else {
+    el.innerHTML = recent.map(l => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;border:1px solid #f1f5f9;margin-bottom:8px;cursor:pointer;transition:.2s;" onmouseenter="this.style.background='#f5f8ff'" onmouseleave="this.style.background=''" onclick="goToLesson('${l.id}')">
+        <div>
+          <div style="font-weight:600;font-size:14px;color:#1e293b;">${escHtml(l.title)}</div>
+          <div style="font-size:12px;color:#94a3b8;margin-top:2px;">${l.content.split(' ').length} từ · ${new Date(l.createdAt).toLocaleDateString('vi')}</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();goToPractice('${l.id}')">Luyện tập →</button>
+      </div>
+    `).join('');
+  }
+}
+
+function goToLesson(id) {
+  state.selectedLessonId = id;
+  switchTab('library');
+  renderLibrary();
+}
+
+function goToPractice(id) {
+  state.practiceLesson = state.lessons.find(l => l.id === id);
+  switchTab('practice');
+  renderPracticeSelect();
+}
+
+// ========================
+// LIBRARY
+// ========================
+function renderLibrary() {
+  const search = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const filtered = state.lessons.filter(l =>
+    l.title.toLowerCase().includes(search) || l.content.toLowerCase().includes(search)
+  );
+  document.getElementById('lesson-count').textContent = filtered.length;
+  const list = document.getElementById('lesson-list');
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state" style="height:200px;">
+      <svg width="48" height="48" fill="none" viewBox="0 0 24 24"><path stroke="#cbd5e1" stroke-width="1.5" d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path stroke="#cbd5e1" stroke-width="1.5" d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+      <div style="font-size:14px;">${search ? 'Không tìm thấy bài học' : 'Chưa có bài học nào'}</div>
+      ${!search ? `<button class="btn btn-blue btn-sm" onclick="openAddModal()">Thêm bài đầu tiên</button>` : ''}
+    </div>`;
+  } else {
+    list.innerHTML = filtered.map(l => `
+      <div class="lesson-item ${state.selectedLessonId === l.id ? 'selected' : ''}" onclick="selectLesson('${l.id}')">
+        <div class="lesson-title">${escHtml(l.title)}</div>
+        <div class="lesson-meta">${l.content.split(' ').length} từ · ${new Date(l.createdAt).toLocaleDateString('vi')}</div>
+      </div>
+    `).join('');
+  }
+  renderLessonDetail();
+}
+
+function selectLesson(id) {
+  state.selectedLessonId = id;
+  renderLibrary();
+}
+
+function renderLessonDetail() {
+  const lesson = state.lessons.find(l => l.id === state.selectedLessonId);
+  document.getElementById('lesson-detail-empty').style.display = lesson ? 'none' : 'flex';
+  document.getElementById('lesson-detail').style.display = lesson ? 'flex' : 'none';
+  if (!lesson) return;
+  document.getElementById('detail-title').textContent = lesson.title;
+  document.getElementById('detail-meta').textContent = `${lesson.content.split(' ').length} từ · ${lesson.content.split(/[.!?]+/).filter(s => s.trim()).length} câu · Thêm lúc ${new Date(lesson.createdAt).toLocaleString('vi')}`;
+  document.getElementById('detail-content').textContent = lesson.content;
+}
+
+function filterLessons() { renderLibrary(); }
+
+function openAddModal() {
+  state.editingLessonId = null;
+  document.getElementById('modal-lesson-name').value = '';
+  document.getElementById('modal-lesson-content').value = '';
+  document.getElementById('modal-lesson-icon').textContent = '✚';
+  document.getElementById('modal-lesson-title').textContent = 'Thêm bài học mới';
+  showModal('modal-lesson');
+}
+
+function editLesson() {
+  const lesson = state.lessons.find(l => l.id === state.selectedLessonId);
+  if (!lesson) return;
+  state.editingLessonId = lesson.id;
+  document.getElementById('modal-lesson-name').value = lesson.title;
+  document.getElementById('modal-lesson-content').value = lesson.content;
+  document.getElementById('modal-lesson-icon').textContent = '✏️';
+  document.getElementById('modal-lesson-title').textContent = 'Chỉnh sửa bài học';
+  showModal('modal-lesson');
+}
+
+function saveLesson() {
+  const title = document.getElementById('modal-lesson-name').value.trim();
+  const content = document.getElementById('modal-lesson-content').value.trim();
+  if (!title) return toast('Vui lòng nhập tiêu đề!', 'err');
+  if (!content) return toast('Vui lòng nhập nội dung bài!', 'err');
+  if (state.editingLessonId) {
+    const idx = state.lessons.findIndex(l => l.id === state.editingLessonId);
+    if (idx !== -1) { state.lessons[idx].title = title; state.lessons[idx].content = content; }
+  } else {
+    state.lessons.push({ id: uid(), title, content, createdAt: new Date().toISOString() });
+    state.selectedLessonId = state.lessons[state.lessons.length - 1].id;
+  }
+  save();
+  closeModal('modal-lesson');
+  renderLibrary();
+  renderDashboard();
+  toast(state.editingLessonId ? 'Đã cập nhật bài học!' : 'Đã thêm bài học mới!', 'ok');
+  renderPracticeSelect();
+}
+
+function deleteLesson() {
+  const lesson = state.lessons.find(l => l.id === state.selectedLessonId);
+  if (!lesson) return;
+  document.getElementById('delete-lesson-name').textContent = lesson.title;
+  showModal('modal-delete');
+}
+
+function confirmDelete() {
+  state.lessons = state.lessons.filter(l => l.id !== state.selectedLessonId);
+  state.selectedLessonId = state.lessons.length ? state.lessons[0].id : null;
+  save();
+  closeModal('modal-delete');
+  renderLibrary();
+  renderDashboard();
+  renderPracticeSelect();
+  toast('Đã xóa bài học!', 'ok');
+}
+
+function startPracticeFromLibrary() {
+  if (!state.selectedLessonId) return;
+  state.practiceLesson = state.lessons.find(l => l.id === state.selectedLessonId);
+  switchTab('practice');
+  renderPracticeSelect();
+}
+
+// ========================
+// PRACTICE
+// ========================
+function renderPracticeSelect() {
+  const sel = document.getElementById('practice-lesson-select');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Chọn bài học —</option>' +
+    state.lessons.map(l => `<option value="${l.id}" ${state.practiceLesson?.id === l.id ? 'selected' : ''}>${escHtml(l.title)}</option>`).join('');
+  if (state.practiceLesson) sel.value = state.practiceLesson.id;
+}
+
+function onLessonSelectChange() {
+  const id = document.getElementById('practice-lesson-select').value;
+  state.practiceLesson = id ? state.lessons.find(l => l.id === id) : null;
+}
+
+function setLevel(lv, btn) {
+  state.practiceLevel = lv;
+  document.querySelectorAll('#panel-practice .toggle-group:nth-child(2) .toggle-btn, [data-level]').forEach(b => b.classList.remove('active'));
+  btn.parentElement.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setMode(m, btn) {
+  state.practiceMode = m;
+  btn.parentElement.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setErrorMode(m, btn) {
+  state.practiceErrorMode = m;
+  btn.parentElement.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function getSegments(text, level) {
+  if (level === 'sentence') {
+    return text.match(/[^.!?]+[.!?]+/g)?.map(s => s.trim()).filter(Boolean) || [text];
+  } else if (level === 'paragraph') {
+    return text.split(/\n\n+/).map(s => s.trim()).filter(Boolean);
+    } else {
+    return [text.trim()];
+  }
+}
+
+function startPractice() {
+  if (!state.practiceLesson) return toast('Vui lòng chọn bài học!', 'err');
+  state.segments = getSegments(state.practiceLesson.content, state.practiceLevel);
+  state.currentSegment = 0;
+  document.getElementById('practice-idle').style.display = 'none';
+  document.getElementById('practice-area').style.display = 'block';
+  document.getElementById('result-panel').style.display = 'none';
+  loadSegment();
+}
+
+function loadSegment() {
+  const seg = state.segments[state.currentSegment];
+  const total = state.segments.length;
+  document.getElementById('segment-indicator').textContent = `Câu ${state.currentSegment + 1} / ${total}`;
+
+  const levelLabels = { sentence:'Từng câu', paragraph:'Từng đoạn', full:'Toàn bài' };
+  const modeLabels = { copy:'👁 Vừa xem', memory:'🧠 Trí nhớ' };
+  document.getElementById('practice-mode-badge').textContent = modeLabels[state.practiceMode];
+  document.getElementById('practice-level-badge').textContent = levelLabels[state.practiceLevel];
+
+  // Layout
+  const leftPane = document.getElementById('left-pane');
+  const writingArea = document.getElementById('writing-area');
+  if (state.practiceMode === 'copy') {
+    leftPane.style.display = 'flex';
+    writingArea.style.gridTemplateColumns = '1fr 1fr';
+    document.getElementById('input-label').textContent = '✍️ Chép lại bên này';
+    document.getElementById('original-display').textContent = seg;
+  } else {
+    leftPane.style.display = 'none';
+    writingArea.style.gridTemplateColumns = '1fr';
+    document.getElementById('input-label').textContent = '🧠 Nhập lại từ trí nhớ';
+  }
+
+  document.getElementById('user-input').value = '';
+  document.getElementById('result-panel').style.display = 'none';
+  document.getElementById('user-input').style.display = 'block';
+
+  // Reset practice timer
+  if (state.practiceTimer) clearInterval(state.practiceTimer);
+  state.practiceSeconds = 0;
+  state.practiceStartTime = Date.now();
+  state.practiceTimer = setInterval(() => {
+    state.practiceSeconds++;
+    const m = String(Math.floor(state.practiceSeconds/60)).padStart(2,'0');
+    const s = String(state.practiceSeconds%60).padStart(2,'0');
+    document.getElementById('practice-timer').textContent = `⏱ ${m}:${s}`;
+  }, 1000);
+
+  document.getElementById('btn-prev').disabled = state.currentSegment === 0;
+  document.getElementById('btn-next').disabled = state.currentSegment >= state.segments.length - 1;
+  document.getElementById('user-input').focus();
+}
+
+function onUserInput() {
+  if (state.practiceErrorMode !== 'live') return;
+  const userText = document.getElementById('user-input').value;
+  const seg = state.segments[state.currentSegment];
+
+  const normalize = s => s.toLowerCase().replace(/[^a-z0-9\s']/g, '');
+  const origWords = seg.trim().split(/\s+/).filter(Boolean);
+  const userWords = userText.split(/\s+/).filter(Boolean);
+
+  // Show word count accuracy hint on textarea border
+  let correctCount = 0;
+  for (let i = 0; i < userWords.length; i++) {
+    if (origWords[i] && normalize(userWords[i]) === normalize(origWords[i])) correctCount++;
+  }
+  const inputEl = document.getElementById('user-input');
+  const wcEl = document.getElementById('live-word-count');
+  if (userWords.length === 0) {
+    inputEl.style.borderColor = '#e5e7eb';
+    if (wcEl) wcEl.textContent = '';
+  } else {
+    const pct = origWords.length ? correctCount / Math.min(userWords.length, origWords.length) : 0;
+    if (pct >= 0.8) inputEl.style.borderColor = '#22c55e';
+    else if (pct >= 0.5) inputEl.style.borderColor = '#f59e0b';
+    else inputEl.style.borderColor = '#ef4444';
+    if (wcEl) wcEl.textContent = `${userWords.length} / ${origWords.length} từ`;
+  }
+}
+
+function submitAnswer() {
+  const userText = document.getElementById('user-input').value.trim();
+  if (!userText) return toast('Vui lòng nhập nội dung!', 'err');
+  if (state.practiceTimer) clearInterval(state.practiceTimer);
+
+  const seg = state.segments[state.currentSegment];
+  const result = compareTexts(seg, userText);
+
+  document.getElementById('res-accuracy').textContent = result.accuracy + '%';
+  document.getElementById('res-correct').textContent = result.correct;
+  document.getElementById('res-wrong').textContent = result.wrong;
+  document.getElementById('res-time').textContent = state.practiceSeconds + 's';
+
+  setTimeout(() => {
+    document.getElementById('res-bar').style.width = result.accuracy + '%';
+  }, 100);
+
+  document.getElementById('diff-result').innerHTML = result.diffHtml;
+  document.getElementById('result-panel').style.display = 'block';
+  document.getElementById('result-panel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+
+  // Save session
+  const today = new Date().toISOString().slice(0,10);
+  if (!state.stats.sessions) state.stats.sessions = [];
+  state.stats.sessions.push({
+    date: today,
+    lesson: state.practiceLesson.title,
+    accuracy: result.accuracy,
+    duration: state.practiceSeconds
+  });
+  // Keep last 50
+  if (state.stats.sessions.length > 50) state.stats.sessions = state.stats.sessions.slice(-50);
+  save();
+}
+
+function compareTexts(original, userText) {
+  const normalize = s => s.toLowerCase().replace(/[^a-z0-9\s']/g, '').trim();
+  const origWords = normalize(original).split(/\s+/).filter(Boolean);
+  const userWords = normalize(userText).split(/\s+/).filter(Boolean);
+
+  let correct = 0, wrong = 0;
+  const maxLen = Math.max(origWords.length, userWords.length);
+
+  let diffParts = [];
+  const origRaw = original.split(/\s+/).filter(Boolean);
+  const userRaw = userText.split(/\s+/).filter(Boolean);
+
+  for (let i = 0; i < origWords.length; i++) {
+    const ow = origWords[i];
+    const uw = userWords[i];
+    const displayOrig = origRaw[i] || '';
+    const displayUser = userRaw[i] || '';
+    if (!uw) {
+      wrong++;
+      diffParts.push(`<span class="diff-missing">[${escHtml(displayOrig)}]</span>`);
+    } else if (ow === uw) {
+      correct++;
+      diffParts.push(`<span class="diff-correct">${escHtml(displayUser)}</span>`);
+    } else {
+      wrong++;
+      diffParts.push(`<span class="diff-wrong">${escHtml(displayUser)}</span><span class="diff-missing">[${escHtml(displayOrig)}]</span>`);
+    }
+  }
+  // Extra words from user
+  for (let i = origWords.length; i < userWords.length; i++) {
+    wrong++;
+    diffParts.push(`<span class="diff-wrong">${escHtml(userRaw[i] || '')}</span>`);
+  }
+
+  const accuracy = origWords.length > 0 ? Math.round((correct / origWords.length) * 100) : 0;
+  return {
+    accuracy, correct, wrong,
+    diffHtml: diffParts.join(' ')
+  };
+}
+
+function retrySegment() {
+  document.getElementById('user-input').value = '';
+  document.getElementById('result-panel').style.display = 'none';
+  // Reset timer
+  if (state.practiceTimer) clearInterval(state.practiceTimer);
+  state.practiceSeconds = 0;
+  state.practiceStartTime = Date.now();
+  state.practiceTimer = setInterval(() => {
+    state.practiceSeconds++;
+    const m = String(Math.floor(state.practiceSeconds/60)).padStart(2,'0');
+    const s = String(state.practiceSeconds%60).padStart(2,'0');
+    document.getElementById('practice-timer').textContent = `⏱ ${m}:${s}`;
+  }, 1000);
+  document.getElementById('user-input').focus();
+}
+
+function prevSegment() {
+  if (state.currentSegment > 0) {
+    state.currentSegment--;
+    loadSegment();
+  }
+}
+
+function nextSegment() {
+  if (state.currentSegment < state.segments.length - 1) {
+    state.currentSegment++;
+    loadSegment();
+  } else {
+    toast('🎉 Bạn đã hoàn thành tất cả các phần!', 'ok');
+  }
+}
+
+function showHint() {
+  const seg = state.segments[state.currentSegment];
+  const words = seg.split(/\s+/).filter(Boolean);
+  const hint = words.slice(0, Math.max(3, Math.ceil(words.length * 0.25))).join(' ') + '...';
+  toast('💡 Gợi ý: ' + hint, 'info');
+}
+
+function resetPractice() {
+  if (state.practiceTimer) clearInterval(state.practiceTimer);
+  document.getElementById('practice-area').style.display = 'none';
+  document.getElementById('practice-idle').style.display = 'block';
+  document.getElementById('result-panel').style.display = 'none';
+  document.getElementById('practice-timer').textContent = '⏱ 00:00';
+}
+
+// ========================
+// STATS
+// ========================
+function renderStats() {
+  const s = state.stats;
+  document.getElementById('s-logins').textContent = s.logins || 0;
+  document.getElementById('s-total-time').textContent = s.totalMinutes || 0;
+  const sessions = s.sessions || [];
+  const best = sessions.length ? Math.max(...sessions.map(x => x.accuracy || 0)) : 0;
+  document.getElementById('s-best-acc').textContent = best + '%';
+  document.getElementById('s-sessions').textContent = sessions.length;
+}
+
+function renderCharts() {
+  // Daily chart
+  const ctx1 = document.getElementById('daily-chart').getContext('2d');
+  const today = new Date();
+  const days = [];
+  const vals = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0,10);
+    days.push(d.toLocaleDateString('vi', { month:'short', day:'numeric' }));
+    vals.push((state.stats.dailyMinutes || {})[key] || 0);
+  }
+
+  if (dailyChartInstance) dailyChartInstance.destroy();
+  dailyChartInstance = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: days,
+      datasets: [{
+        label: 'Phút học',
+        data: vals,
+        backgroundColor: 'rgba(30,111,255,0.15)',
+        borderColor: '#1e6fff',
+        borderWidth: 2,
+        borderRadius: 8,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color:'#f1f5f9' }, ticks: { color:'#94a3b8', font:{ size:11 } } },
+        x: { grid: { display: false }, ticks: { color:'#64748b', font:{ size:11 } } }
+      }
+    }
+  });
+
+  // Accuracy chart
+  const ctx2 = document.getElementById('accuracy-chart').getContext('2d');
+  const sessions = (state.stats.sessions || []).slice(-10);
+  const accLabels = sessions.map((s,i) => `#${i+1}`);
+  const accVals = sessions.map(s => s.accuracy || 0);
+
+  if (accuracyChartInstance) accuracyChartInstance.destroy();
+  accuracyChartInstance = new Chart(ctx2, {
+    type: 'line',
+    data: {
+      labels: accLabels,
+      datasets: [{
+        label: '% Chính xác',
+        data: accVals,
+        fill: true,
+        backgroundColor: 'rgba(6,182,212,0.1)',
+        borderColor: '#06b6d4',
+        borderWidth: 2.5,
+        pointBackgroundColor: '#06b6d4',
+        pointRadius: 5,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { min:0, max:100, grid:{ color:'#f1f5f9' }, ticks:{ color:'#94a3b8', font:{ size:11 }, callback: v => v+'%' } },
+        x: { grid:{ display:false }, ticks:{ color:'#64748b', font:{ size:11 } } }
+      }
+    }
+  });
+}
+
+// ========================
+// MODAL UTILS
+// ========================
+function showModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', function(e) {
+    if (e.target === this) closeModal(this.id);
+  });
+});
+
+// ========================
+// TOAST
+// ========================
+let toastTimer;
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = type === 'err' ? '#ef4444' : type === 'ok' ? '#22c55e' : '#1e293b';
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ========================
+// UTILS
+// ========================
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ========================
+// KEYBOARD SHORTCUTS
+// ========================
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.key === 'Enter') {
+    const panel = document.querySelector('.tab-panel.active');
+    if (panel && panel.id === 'panel-practice') submitAnswer();
+  }
+});
+
+// ========================
+// INIT
+// ========================
+(function() {
+  const lastUser = sessionStorage.getItem('swri_current');
+  if (lastUser) {
+    const users = getUsers();
+    const name = users[lastUser]?.name || (lastUser.startsWith('guest_') ? 'Khách' : lastUser);
+    state.user = lastUser;
+    sessionStorage.setItem('swri_current', lastUser);
+    load();
+    state.stats.logins = (state.stats.logins || 0) + 1;
+    const today = new Date().toISOString().slice(0,10);
+    if (!state.stats.dailyMinutes) state.stats.dailyMinutes = {};
+    if (!state.stats.dailyMinutes[today]) state.stats.dailyMinutes[today] = 0;
+    save();
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('display-username').textContent = name;
+    document.getElementById('greet-name').textContent = name;
+    document.getElementById('user-avatar-initials').textContent = name[0].toUpperCase();
+    startSessionTimer();
+    renderLibrary();
+    renderDashboard();
+    renderStats();
+    renderPracticeSelect();
+  }
+})();
+
+// Wrap enterApp to also store session key
+(function() {
+  const _orig = enterApp;
+  enterApp = function(u, n) {
+    sessionStorage.setItem('swri_current', u);
+    _orig(u, n);
+  };
+})();
+
+// doLogout is defined above with full session save logic
+
+// Add enter key on auth inputs
+document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('login-user').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('reg-pass2').addEventListener('keydown', e => { if(e.key==='Enter') doRegister(); });
+
+// Prevent accidental close
+window.addEventListener('beforeunload', function() {
+  if (state.user && state.sessionSeconds > 10) {
+    const today = new Date().toISOString().slice(0,10);
+    const addMins = Math.floor(state.sessionSeconds / 60);
+    if (addMins > 0) {
+      if (!state.stats.dailyMinutes[today]) state.stats.dailyMinutes[today] = 0;
+      state.stats.dailyMinutes[today] += addMins;
+      state.stats.totalMinutes = (state.stats.totalMinutes || 0) + addMins;
+      save();
+    }
+  }
+});
+
+</script>
+</body>
+</html>
